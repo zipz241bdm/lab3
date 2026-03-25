@@ -44,8 +44,12 @@ namespace LightHTML
                 var li = new LightElementNode("li").AddChild(new LightTextNode(item));
                 ul.AddChild(li);
             }
-
-            var img = new LightElementNode("img", DisplayType.Inline, ClosingType.SelfClosing, new[] { "logo" });
+            
+            var img = new LightImageNode(
+                href: "assets/Csharp_Logo.png",
+                alt: "Logo",
+                cssClasses: new[] { "logo" })
+                .WithSize("400", "400");
 
             var title = new LightElementNode("h2").AddChild(new LightTextNode("Популярні мови програмування"));
 
@@ -109,6 +113,24 @@ namespace LightHTML
 
             Console.WriteLine("\nПодія без підписників - <p> keydown");
             subTitle.DispatchEvent("keydown");
+
+            Console.WriteLine("\nЗавантаження фото за допомогою FileImageLoadStrategy");
+            var fileImg = new LightImageNode(
+                href: "assets/Csharp_Logo.png",
+                alt: "Логотип",
+                cssClasses: new[] { "logo", "header-img" })
+                .WithSize("120", "120");
+            var fileImgHtml = fileImg.OuterHTML();
+            Console.WriteLine($"{fileImgHtml[..40]} ... {fileImgHtml[^80..]}");
+
+            Console.WriteLine("\nЗавантаження фото за допомогою NetworkImageLoadStrategy");
+            var netImg = new LightImageNode(
+                href: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Csharp_Logo.png",
+                alt: "Логотип")
+                .WithSize("200", "200")
+                .AddClass("logo");
+            var netImgHtml = netImg.OuterHTML();
+            Console.WriteLine($"{netImgHtml[..40]} ... {netImgHtml[^80..]}");
         }
     }
 }
