@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="Adapter/Adapter.csproj" />
+  <Project Path="Bridge/Bridge.csproj" />
+  <Project Path="Decorator/Decorator.csproj" />
+  <Project Path="Flyweight/Flyweight.csproj" />
+  <Project Path="LightHTML/LightHTML.csproj" />
+  <Project Path="Proxy/Proxy.csproj" />
+</Solution>
