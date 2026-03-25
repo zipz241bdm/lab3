@@ -1,4 +1,5 @@
 using System.Text;
+using LightHTML.EventListener;
 
 namespace LightHTML
 {
@@ -9,8 +10,9 @@ namespace LightHTML
         public ClosingType Closing { get; set; }
         public List<string> CssClasses { get; private set; } = new();
         public List<LightNode> Children { get; private set; } = new();
-
         public int ChildrenCount => Children.Count;
+
+        private readonly Dictionary<string, List<ILightEventListener>> _listeners = new(StringComparer.OrdinalIgnoreCase);
 
         public LightElementNode(
             string tagName,
@@ -27,6 +29,39 @@ namespace LightHTML
 
         public LightElementNode AddChild(LightNode node) { Children.Add(node); return this; }
         public LightElementNode AddClass(string cls) { CssClasses.Add(cls); return this; }
+
+        public LightElementNode AddEventListener(string eventType, ILightEventListener listener)
+        {
+            if (!_listeners.TryGetValue(eventType, out var list))
+            {
+                list = new List<ILightEventListener>();
+                _listeners[eventType] = list;
+            }
+
+            if (!list.Contains(listener))
+                list.Add(listener);
+
+            return this;
+        }
+
+        public LightElementNode RemoveEventListener(string eventType, ILightEventListener listener)
+        {
+            if (_listeners.TryGetValue(eventType, out var list))
+                list.Remove(listener);
+            return this;
+        }
+
+        public void DispatchEvent(string eventType)
+        {
+            if (!_listeners.TryGetValue(eventType, out var list) || list.Count == 0)
+            {
+                Console.WriteLine($"<{TagName}> Подія \"{eventType}\" - слухачів немає.");
+                return;
+            }
+
+            foreach (var listener in list.ToList())
+                listener.HandleEvent(eventType, this);
+        }
 
         private string OpenTag()
         {

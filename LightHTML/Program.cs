@@ -1,3 +1,5 @@
+using LightHTML.EventListener;
+
 namespace LightHTML
 {
     class Program
@@ -61,6 +63,52 @@ namespace LightHTML
 
             Console.WriteLine("\nInnerHTML таблиці (тільки вміст)");
             Console.WriteLine(table.InnerHTML());
+
+            Console.WriteLine("\nКілька слухачів - <table>");
+
+            var logger  = new ConsoleLogger("TableLogger");
+            var counter = new ClickCounter();
+
+            table.AddEventListener("click", logger);
+            table.AddEventListener("click", counter);
+            table.AddEventListener("click", counter);
+
+            table.DispatchEvent("click");
+            table.DispatchEvent("click");
+
+            Console.WriteLine("\nРізні типи подій - <img> mouseover / mouseout");
+
+            var highlighter = new HoverHighlighter();
+            img.AddEventListener("mouseover", highlighter);
+            img.AddEventListener("mouseout", highlighter);
+
+            img.DispatchEvent("mouseover");
+            img.DispatchEvent("mouseout");
+
+            Console.WriteLine("\nОдин логер на <h2> і <ul> (click)");
+
+            var sharedLogger = new ConsoleLogger("SharedLogger");
+            title.AddEventListener("click", sharedLogger);
+            ul.AddEventListener("click", sharedLogger);
+
+            title.DispatchEvent("click");
+            ul.DispatchEvent("click");
+
+            Console.WriteLine("\nOnceListener на <div> (mouseover) - лише 1 раз");
+
+            var onceLog = new OnceListener("mouseover", new ConsoleLogger("OnceLog"));
+            div.AddEventListener("mouseover", onceLog);
+
+            div.DispatchEvent("mouseover");
+            div.DispatchEvent("mouseover");
+
+            Console.WriteLine("\nRemoveEventListener - видалено logger, лишився counter");
+
+            table.RemoveEventListener("click", logger);
+            table.DispatchEvent("click");
+
+            Console.WriteLine("\nПодія без підписників - <p> keydown");
+            subTitle.DispatchEvent("keydown");
         }
     }
 }
