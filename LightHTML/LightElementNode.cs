@@ -9,6 +9,7 @@ namespace LightHTML
         public DisplayType Display { get; set; }
         public ClosingType Closing { get; set; }
         public List<string> CssClasses { get; private set; } = new();
+        public Dictionary<string, string> Styles { get; private set; } = new(StringComparer.OrdinalIgnoreCase);
         public List<LightNode> Children { get; private set; } = new();
         public int ChildrenCount => Children.Count;
 
@@ -25,10 +26,37 @@ namespace LightHTML
             Closing = closing;
             if (cssClasses is not null)
                 CssClasses.AddRange(cssClasses);
+
+            OnCreated();
         }
 
-        public LightElementNode AddChild(LightNode node) { Children.Add(node); return this; }
-        public LightElementNode AddClass(string cls) { CssClasses.Add(cls); return this; }
+        public LightElementNode AddChild(LightNode node)
+        {
+            Children.Add(node);
+            OnInserted(node);
+            return this;
+        }
+
+        public LightElementNode RemoveChild(LightNode node)
+        {
+            if (Children.Remove(node))
+                OnRemoved(node);
+            return this;
+        }
+
+        public LightElementNode AddClass(string cls)
+        {
+            CssClasses.Add(cls);
+            OnClassListApplied(cls);
+            return this;
+        }
+
+        public LightElementNode AddStyle(string property, string value)
+        {
+            Styles[property] = value;
+            OnStylesApplied(property, value);
+            return this;
+        }
 
         public LightElementNode AddEventListener(string eventType, ILightEventListener listener)
         {
@@ -68,10 +96,9 @@ namespace LightHTML
             var sb = new StringBuilder($"<{TagName}");
             if (CssClasses.Count > 0)
                 sb.Append($" class=\"{string.Join(' ', CssClasses)}\"");
-            if (Closing == ClosingType.SelfClosing)
-                sb.Append(" />");
-            else
-                sb.Append('>');
+            if (Styles.Count > 0)
+                sb.Append($" style=\"{string.Join("; ", Styles.Select(kv => $"{kv.Key}:{kv.Value}"))}\"");
+            sb.Append(Closing == ClosingType.SelfClosing ? " />" : ">");
             return sb.ToString();
         }
 
