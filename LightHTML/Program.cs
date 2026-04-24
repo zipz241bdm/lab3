@@ -1,6 +1,7 @@
 using LightHTML.EventListener;
 using LightHTML.Lifecycle;
 using LightHTML.Iterator;
+using LightHTML.State;
 
 namespace LightHTML
 {
@@ -325,6 +326,43 @@ namespace LightHTML
 
             Console.WriteLine("\nФінальний стан стеків");
             history.PrintState();
+
+
+            Console.WriteLine("\n\nПатерн стейт (State)");
+
+            var statefulBtn = new StatefulElementNode("button");
+            statefulBtn.AddChild(new LightTextNode("Click Me!"));
+            statefulBtn.AddClass("btn-primary");
+
+            Console.WriteLine("\nРендер у стані Draft:");
+            Console.WriteLine(statefulBtn.OuterHTML());
+
+            statefulBtn.DispatchEvent("click");
+
+            statefulBtn.Mount();
+            statefulBtn.AddEventListener("click", new ConsoleLogger("StateLogger"));
+
+            Console.WriteLine("\nПодія у стані Active:");
+            statefulBtn.DispatchEvent("click");
+
+            statefulBtn.Freeze();
+
+            Console.WriteLine("\nСпроба мутації у стані Frozen:");
+            statefulBtn.AddClass("disabled");
+
+            Console.WriteLine("\nРендер у стані Frozen:");
+            Console.WriteLine(statefulBtn.OuterHTML());
+            statefulBtn.Unfreeze();
+            statefulBtn.Detach();
+
+            Console.WriteLine("\nСпроба події у стані Detached:");
+            statefulBtn.DispatchEvent("click");
+
+            Console.WriteLine("\nМутація у стані Detached (дозволено):");
+            statefulBtn.AddStyle("display", "none");
+
+            Console.WriteLine("\nРендер у стані Detached:");
+            Console.WriteLine(statefulBtn.OuterHTML());
         }
     }
 }
