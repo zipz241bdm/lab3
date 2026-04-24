@@ -45,5 +45,10 @@ namespace LightHTML
         }
 
         public LightImageNode WithSize(string w, string h) { Width = w; Height = h; return this; }
+
+        public override void Accept(Visitor.ILightNodeVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

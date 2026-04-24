@@ -137,5 +137,15 @@ namespace LightHTML
         }
 
         public override string ToString() => OuterHTML();
+
+        public override void Accept(Visitor.ILightNodeVisitor visitor)
+        {
+            visitor.Visit(this);
+            
+            foreach (var child in Children)
+            {
+                child.Accept(visitor);
+            }
+        }
     }
 }
