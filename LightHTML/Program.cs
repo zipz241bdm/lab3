@@ -2,6 +2,7 @@ using LightHTML.EventListener;
 using LightHTML.Lifecycle;
 using LightHTML.Iterator;
 using LightHTML.State;
+using LightHTML.Visitor;
 
 namespace LightHTML
 {
@@ -363,6 +364,38 @@ namespace LightHTML
 
             Console.WriteLine("\nРендер у стані Detached:");
             Console.WriteLine(statefulBtn.OuterHTML());
+
+
+            Console.WriteLine("\n\nДемонстрація патерну Visitor (Text Extractor)");
+
+            var treeRoot = new LightElementNode("div");
+            treeRoot.AddChild(new LightElementNode("h1").AddChild(new LightTextNode("Головний заголовок")));
+            treeRoot.AddChild(new LightElementNode("p").AddChild(new LightTextNode("Це текстовий абзац з описом.")));
+            treeRoot.AddChild(new LightElementNode("span", DisplayType.Inline).AddChild(new LightTextNode("Інлайн текст.")));
+            
+            Console.WriteLine("HTML Дерево:");
+            Console.WriteLine(treeRoot.OuterHTML());
+
+            var extractor = new PlainTextExtractorVisitor();
+            treeRoot.Accept(extractor);
+
+            Console.WriteLine("\nВитягнутий Plain Text:");
+            Console.WriteLine(extractor.GetPlainText());
+            Console.WriteLine();
+
+            var page = new LightElementNode("body");
+            page.AddChild(new LightElementNode("h1").AddChild(new LightTextNode("Вітаємо")));
+            page.AddChild(new LightImageNode("assets/Csharp_Logo.png", alt: ""));
+            page.AddChild(new LightElementNode("div").AddChild(new LightTextNode("Контент")));
+
+            var stats = new NodeStatisticsVisitor();
+            page.Accept(stats);
+            stats.PrintReport();
+            Console.WriteLine();
+
+            var accessibility = new AccessibilityCheckerVisitor();
+            page.Accept(accessibility);
+            accessibility.PrintResults();
         }
     }
 }
