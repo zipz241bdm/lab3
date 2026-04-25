@@ -20,5 +20,10 @@ namespace LightHTML
         public override string InnerHTML(int indent = 0) => OuterHTML(indent);
 
         public override string ToString() => Text;
+
+        public override void Accept(Visitor.ILightNodeVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }
