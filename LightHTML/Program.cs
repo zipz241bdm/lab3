@@ -1,4 +1,5 @@
 using LightHTML.EventListener;
+using LightHTML.Lifecycle;
 
 namespace LightHTML
 {
@@ -44,7 +45,7 @@ namespace LightHTML
                 var li = new LightElementNode("li").AddChild(new LightTextNode(item));
                 ul.AddChild(li);
             }
-            
+
             var img = new LightImageNode(
                 href: "assets/Csharp_Logo.png",
                 alt: "Logo",
@@ -131,6 +132,36 @@ namespace LightHTML
                 .AddClass("logo");
             var netImgHtml = netImg.OuterHTML();
             Console.WriteLine($"{netImgHtml[..40]} ... {netImgHtml[^80..]}");
+
+
+            Console.WriteLine("\n\nШаблонний метод - хуки життєвого циклу");
+
+            Console.WriteLine("\nСтворення LoggedElementNode <section>:");
+            var section = new LoggedElementNode("section", label: "section");
+
+            Console.WriteLine("\nAddClass() - OnClassListApplied:");
+            section.AddClass("container");
+            section.AddClass("main");
+
+            Console.WriteLine("\nAddStyle() - OnStylesApplied:");
+            section.AddStyle("color", "#333");
+            section.AddStyle("font-size", "16px");
+
+            Console.WriteLine("\nСтворення LoggedTextNode:");
+            var loggedText = new LoggedTextNode("Привіт, LightHTML!", label: "h1-text");
+
+            Console.WriteLine("\nAddChild() - OnInserted:");
+            var h1 = new LoggedElementNode("h1", label: "h1");
+            h1.AddChild(loggedText);
+            section.AddChild(h1);
+
+            Console.WriteLine("\nRemoveChild() - OnRemoved:");
+            section.RemoveChild(h1);
+
+            Console.WriteLine("\nOnTextRendered під час рендерингу (OuterHTML):");
+            var paraText = new LoggedTextNode("Хуки життєвого циклу - потужний інструмент.", "p-text");
+            var p = new LightElementNode("p").AddChild(paraText);
+            _ = p.OuterHTML();
         }
     }
 }
