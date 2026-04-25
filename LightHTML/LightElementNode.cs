@@ -30,35 +30,35 @@ namespace LightHTML
             OnCreated();
         }
 
-        public LightElementNode AddChild(LightNode node)
+        public virtual LightElementNode AddChild(LightNode node)
         {
             Children.Add(node);
             OnInserted(node);
             return this;
         }
 
-        public LightElementNode RemoveChild(LightNode node)
+        public virtual LightElementNode RemoveChild(LightNode node)
         {
             if (Children.Remove(node))
                 OnRemoved(node);
             return this;
         }
 
-        public LightElementNode AddClass(string cls)
+        public virtual LightElementNode AddClass(string cls)
         {
             CssClasses.Add(cls);
             OnClassListApplied(cls);
             return this;
         }
 
-        public LightElementNode AddStyle(string property, string value)
+        public virtual LightElementNode AddStyle(string property, string value)
         {
             Styles[property] = value;
             OnStylesApplied(property, value);
             return this;
         }
 
-        public LightElementNode AddEventListener(string eventType, ILightEventListener listener)
+        public virtual LightElementNode AddEventListener(string eventType, ILightEventListener listener)
         {
             if (!_listeners.TryGetValue(eventType, out var list))
             {
@@ -72,14 +72,14 @@ namespace LightHTML
             return this;
         }
 
-        public LightElementNode RemoveEventListener(string eventType, ILightEventListener listener)
+        public virtual LightElementNode RemoveEventListener(string eventType, ILightEventListener listener)
         {
             if (_listeners.TryGetValue(eventType, out var list))
                 list.Remove(listener);
             return this;
         }
 
-        public void DispatchEvent(string eventType)
+        public virtual void DispatchEvent(string eventType)
         {
             if (!_listeners.TryGetValue(eventType, out var list) || list.Count == 0)
             {
