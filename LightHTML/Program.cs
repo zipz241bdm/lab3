@@ -1,5 +1,6 @@
 using LightHTML.EventListener;
 using LightHTML.Lifecycle;
+using LightHTML.Iterator;
 
 namespace LightHTML
 {
@@ -162,6 +163,86 @@ namespace LightHTML
             var paraText = new LoggedTextNode("Хуки життєвого циклу - потужний інструмент.", "p-text");
             var p = new LightElementNode("p").AddChild(paraText);
             _ = p.OuterHTML();
+
+            
+            Console.WriteLine("\n\nІтератор - Обхід дерева DFS і BFS");
+
+            static LightElementNode El(string tag, params LightNode[] children)
+            {
+                var el = new LightElementNode(tag);
+                foreach (var c in children) el.AddChild(c);
+                return el;
+            }
+            static LightTextNode Tx(string text) => new LightTextNode(text);
+
+            var root = El("div",
+                El("header",
+                    El("h1", Tx("Заголовок"))),
+                El("main",
+                    El("p", Tx("Перший абзац")),
+                    El("ul",
+                        El("li", Tx("Пункт A")),
+                        El("li", Tx("Пункт B")))),
+                El("footer",
+                    El("p", Tx("Підвал")))
+            );
+            root.AddClass("root");
+
+            Console.WriteLine("\nСтруктура документа (OuterHTML):");
+            Console.WriteLine(root.OuterHTML());
+
+            Console.WriteLine("\nОбхід в глибину (DFS, pre-order):");
+            root.Traverse(TraversalType.DepthFirst, (node, i) =>
+            {
+                var label = node switch
+                {
+                    LightElementNode el => $"<{el.TagName}>",
+                    LightTextNode tx => $"\"{tx.Text}\"",
+                    _ => node.GetType().Name
+                };
+                Console.WriteLine($"  {i,2}. {label}");
+            });
+
+            Console.WriteLine("\nОбхід в ширину (BFS, level-order):");
+            root.Traverse(TraversalType.BreadthFirst, (node, i) =>
+            {
+                var label = node switch
+                {
+                    LightElementNode el => $"<{el.TagName}>",
+                    LightTextNode tx => $"\"{tx.Text}\"",
+                    _ => node.GetType().Name
+                };
+                Console.WriteLine($"  {i,2}. {label}");
+            });
+
+            Console.WriteLine("\nРучний ітератор DFS: збираємо лише елементи (без текстових):");
+            var dfs = root.AsEnumerable(TraversalType.DepthFirst).GetEnumerator();
+            int count = 0;
+            while (dfs.MoveNext())
+            {
+                var node = dfs.Current;
+                if (node is LightElementNode el)
+                {
+                    var classes = el.CssClasses.Count > 0
+                        ? $" {string.Join(", ", el.CssClasses.Select(c => "." + c))}" : "";
+                    Console.WriteLine($"  <{el.TagName}>{classes}  ({el.ChildrenCount} дітей)");
+                    count++;
+                }
+            }
+            Console.WriteLine($"  Всього елементів: {count}");
+
+            Console.WriteLine("\nReset() і повторний обхід BFS (тільки перші 4 вузли):");
+            var bfs = root.AsEnumerable(TraversalType.BreadthFirst).GetEnumerator();
+            for (int i = 0; i < 4 && bfs.MoveNext(); i++)
+            {
+                var node = bfs.Current;
+                var label = node is LightElementNode e ? $"<{e.TagName}>" : $"\"{((LightTextNode)node).Text}\"";
+                Console.WriteLine($"  {i + 1}. {label}");
+            }
+            Console.WriteLine("  ... скидаємо ітератор ...");
+            bfs.Reset();
+            bfs.MoveNext();
+            Console.WriteLine($"  Після Reset першим знову є: <{((LightElementNode)bfs.Current).TagName}>");
         }
     }
 }
