@@ -243,6 +243,88 @@ namespace LightHTML
             bfs.Reset();
             bfs.MoveNext();
             Console.WriteLine($"  Після Reset першим знову є: <{((LightElementNode)bfs.Current).TagName}>");
+
+
+            Console.WriteLine("\n\nПатерн Команда - Undo / Redo DOM-редактор");
+
+            var history = new Command.CommandHistory();
+            var article = new LightElementNode("article");
+            var heading = new LightElementNode("h1").AddChild(new LightTextNode("LightHTML Editor"));
+            var intro = new LightElementNode("p").AddChild(new LightTextNode("Вступний абзац."));
+            var note = new LightElementNode("p").AddChild(new LightTextNode("Примітка."));
+
+            Console.WriteLine("\nВиконуємо три команди");
+            history.Execute(new Command.AddChildCommand(article, heading));
+            history.Execute(new Command.AddChildCommand(article, intro));
+            history.Execute(new Command.AddClassCommand(article, "blog-post"));
+
+            Console.WriteLine("\nHTML після трьох команд:");
+            Console.WriteLine(article.OuterHTML());
+
+            Console.WriteLine("\nUndo x2 (скасуємо AddClass і другий AddChild)");
+            history.Undo();
+            history.Undo();
+
+            Console.WriteLine("\nHTML після двох Undo:");
+            Console.WriteLine(article.OuterHTML());
+
+            Console.WriteLine("\nRedo x1 (повертаємо другий AddChild)");
+            history.Redo();
+
+            Console.WriteLine("\nHTML після Redo:");
+            Console.WriteLine(article.OuterHTML());
+
+            Console.WriteLine("\nSetStyle (нова команда - очищує Redo-стек)");
+            history.Execute(new Command.SetStyleCommand(article, "color", "#222"));
+            history.Execute(new Command.SetStyleCommand(article, "font-size", "18px"));
+
+            Console.WriteLine("\nRedo вже не можливий (новий Execute скинув стек):");
+            history.Redo();
+
+            Console.WriteLine("\nHTML зі стилями:");
+            Console.WriteLine(article.OuterHTML());
+
+            Console.WriteLine("\nUndo SetStyle - відновлення попереднього значення");
+            history.Execute(new Command.SetStyleCommand(article, "color", "red"));
+            Console.WriteLine($"  color = {article.Styles["color"]}");
+            history.Undo();
+            Console.WriteLine($"  color після Undo = {article.Styles["color"]}");
+
+            Console.WriteLine("\n6. MacroCommand - кілька операцій як одна");
+            var macro = new Command.MacroCommand("Додати примітку зі стилем", new LightHTML.Command.ILightCommand[]
+            {
+                new Command.AddChildCommand(article, note),
+                new Command.AddClassCommand(article, "has-note"),
+                new Command.SetStyleCommand(article, "border", "1px solid #ccc"),
+            });
+
+            history.Execute(macro);
+
+            Console.WriteLine("\nHTML після MacroCommand:");
+            Console.WriteLine(article.OuterHTML());
+
+            Console.WriteLine("\nUndo всього макросу одним кроком:");
+            history.Undo();
+
+            Console.WriteLine("\nHTML після Undo макросу:");
+            Console.WriteLine(article.OuterHTML());
+
+            Console.WriteLine("\nRemoveChildCommand зі збереженням позиції");
+            history.Execute(new Command.AddChildCommand(article, note));
+
+            Console.WriteLine("\nПеред RemoveChild:");
+            Console.WriteLine(article.OuterHTML());
+
+            history.Execute(new Command.RemoveChildCommand(article, heading));
+            Console.WriteLine("\nПісля RemoveChild <h1>:");
+            Console.WriteLine(article.OuterHTML());
+
+            history.Undo();
+            Console.WriteLine("\nПісля Undo - <h1> повернувся на свою позицію:");
+            Console.WriteLine(article.OuterHTML());
+
+            Console.WriteLine("\nФінальний стан стеків");
+            history.PrintState();
         }
     }
 }
